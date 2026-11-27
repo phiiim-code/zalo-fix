@@ -41,6 +41,7 @@ jobs:
               -framework UIKit \
               -framework WebKit \
               -framework QuartzCore \
+              -framework CoreGraphics \
               -install_name @rpath/ytShell.dylib \
               -o out/ytShell.dylib \
               ytShell.m
