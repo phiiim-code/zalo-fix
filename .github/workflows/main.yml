@@ -1,0 +1,33 @@
+name: Build bypassSiri.dylib
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile arm64 iOS dylib
+        run: |
+          SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+          xcrun --sdk iphoneos clang \
+            -arch arm64 \
+            -isysroot "$SDK" \
+            -mios-version-min=15.0 \
+            -dynamiclib \
+            -fobjc-arc \
+            -framework Foundation \
+            -framework Intents \
+            -install_name @rpath/bypassSiri.dylib \
+            -o bypassSiri.dylib \
+            bypassSiri.m
+          codesign --force --sign - bypassSiri.dylib
+
+      - name: Upload dylib
+        uses: actions/upload-artifact@v4
+        with:
+          name: bypassSiri
+          path: bypassSiri.dylib
