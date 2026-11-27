@@ -1,4 +1,4 @@
-name: Build bypassSiri.dylib
+name: Build Zalo Tweaks
 
 on:
   push:
@@ -10,24 +10,45 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Compile arm64 iOS dylib
+      - name: Compile arm64 iOS dylibs
         run: |
           SDK=$(xcrun --sdk iphoneos --show-sdk-path)
-          xcrun --sdk iphoneos clang \
-            -arch arm64 \
-            -isysroot "$SDK" \
-            -mios-version-min=15.0 \
-            -dynamiclib \
-            -fobjc-arc \
-            -framework Foundation \
-            -framework Intents \
-            -install_name @rpath/bypassSiri.dylib \
-            -o bypassSiri.dylib \
-            bypassSiri.m
-          codesign --force --sign - bypassSiri.dylib
+          mkdir -p out
 
-      - name: Upload dylib
+          if [ -f bypassSiri.m ]; then
+            xcrun --sdk iphoneos clang \
+              -arch arm64 \
+              -isysroot "$SDK" \
+              -mios-version-min=15.0 \
+              -dynamiclib \
+              -fobjc-arc \
+              -framework Foundation \
+              -framework Intents \
+              -install_name @rpath/bypassSiri.dylib \
+              -o out/bypassSiri.dylib \
+              bypassSiri.m
+            codesign --force --sign - out/bypassSiri.dylib
+          fi
+
+          if [ -f ytShell.m ]; then
+            xcrun --sdk iphoneos clang \
+              -arch arm64 \
+              -isysroot "$SDK" \
+              -mios-version-min=15.0 \
+              -dynamiclib \
+              -fobjc-arc \
+              -framework Foundation \
+              -framework UIKit \
+              -framework WebKit \
+              -framework QuartzCore \
+              -install_name @rpath/ytShell.dylib \
+              -o out/ytShell.dylib \
+              ytShell.m
+            codesign --force --sign - out/ytShell.dylib
+          fi
+
+      - name: Upload dylibs
         uses: actions/upload-artifact@v4
         with:
-          name: bypassSiri
-          path: bypassSiri.dylib
+          name: ZaloTweaks
+          path: out/*.dylib
